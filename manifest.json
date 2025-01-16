@@ -1,11 +1,10 @@
 {
 	"id": "journal-recap",
 	"name": "Journal Recap",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"minAppVersion": "0.15.0",
 	"description": "Recap your journal entries with AI generated summaries.",
 	"author": "Obsidian",
-	"authorUrl": "https://obsidian.md",
-	"fundingUrl": "https://obsidian.md/pricing",
-	"isDesktopOnly": false
+	"authorUrl": "https://github.com/aegerita",
+	"isDesktopOnly": true
 }

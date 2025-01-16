@@ -20,7 +20,7 @@ export class ViewManager {
 
     async getTitle(): Promise<string | null> {
         const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
-        if (activeView) {
+        if (activeView && activeView.file) {
             return activeView.file.basename;
         }
         return null;
@@ -28,7 +28,7 @@ export class ViewManager {
 
     async getFrontMatter(): Promise<string | null> {
         const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
-        if (activeView) {
+        if (activeView && activeView.file) {
             const file = activeView.file;
             const frontmatter = this.app.metadataCache.getFileCache(file)?.frontmatter as Partial<FrontMatterCache>;
             if (frontmatter?.position) {
@@ -41,7 +41,7 @@ export class ViewManager {
 
     async getContent(): Promise<string | null> {
         const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
-        if (activeView) {
+        if (activeView && activeView.file) {
             // delete frontmatter
             let content = activeView.getViewData();
             const file = activeView.file;
@@ -57,7 +57,7 @@ export class ViewManager {
     async insertAtFrontMatter(key: string, value: string, overwrite: boolean = true): Promise<void> {
         const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
 
-        if (activeView) {
+        if (activeView && activeView.file) {
             const file = activeView.file;
             await this.app.fileManager.processFrontMatter(file, (frontmatter) => {
                 frontmatter = frontmatter || {};
