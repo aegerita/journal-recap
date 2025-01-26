@@ -34,7 +34,7 @@ export const DEFAULT_SETTINGS: JournalRecapSettings = {
         system_prompt: DEFAULT_SYSTEM_MESSAGE,
         response_schema: DEFAULT_OUTPUT_FORMAT,
 
-        model: "gpt-4.0-mini",
+        model: "gpt-4o-mini",
     },
 };
 
@@ -80,7 +80,7 @@ export class JournalRecapSettingTab extends PluginSettingTab {
             .setDesc("ID of the model to use. See https://platform.openai.com/docs/models")
             .addText((text) =>
                 text
-                    .setPlaceholder('gpt-4.0-mini')
+                    .setPlaceholder('gpt-4o-mini')
                     .setValue(commandOption.model)
                     .onChange(async (value) => {
                         commandOption.model = value;
