@@ -1,6 +1,6 @@
 {
 	"name": "journal-recap",
-	"version": "1.0.1",
+	"version": "1.0.2",
 	"description": "Recap your journal entries with AI generated summaries.",
 	"main": "main.js",
 	"type": "module",
