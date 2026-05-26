@@ -8,7 +8,7 @@ import {
 } from "./settings";
 
 export default class JournalRecapPlugin extends Plugin {
-	settings: JournalRecapSettings;
+	settings!: JournalRecapSettings;
 
 	async onload() {
 		await this.loadSettings();

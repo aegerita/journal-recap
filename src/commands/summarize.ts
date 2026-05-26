@@ -35,13 +35,13 @@ async function runSummarize(
 
 function createLoadingNotice(text: string, timeout = 10000): Notice {
 	const notice = new Notice("", timeout);
-	const loadingContainer = document.createElement("div");
+	const loadingContainer = activeDocument.createElement("div");
 	loadingContainer.addClass("loading-container");
 
-	const loadingIcon = document.createElement("div");
+	const loadingIcon = activeDocument.createElement("div");
 	loadingIcon.addClass("loading-icon");
 
-	const loadingText = document.createElement("span");
+	const loadingText = activeDocument.createElement("span");
 	loadingText.textContent = text;
 
 	notice.messageEl.empty();

@@ -2,7 +2,7 @@
 	"id": "journal-recap",
 	"name": "Journal Recap",
 	"version": "1.0.1",
-	"minAppVersion": "1.4.4",
+	"minAppVersion": "1.8.7",
 	"description": "Recap your journal entries with AI generated summaries.",
 	"author": "Jenny Tai",
 	"authorUrl": "https://github.com/aegerita",

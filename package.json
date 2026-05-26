@@ -14,19 +14,19 @@
 	"author": "Jenny Tai",
 	"license": "0-BSD",
 	"devDependencies": {
-		"@eslint/js": "9.30.1",
-		"@types/node": "^16.11.6",
-		"esbuild": "0.25.5",
-		"eslint-plugin-obsidianmd": "0.1.9",
-		"globals": "14.0.0",
-		"jiti": "2.6.1",
-		"tslib": "2.4.0",
-		"typescript": "^5.8.3",
-		"typescript-eslint": "8.35.1"
+		"@eslint/js": "9.39.4",
+		"@types/node": "^25.9.1",
+		"esbuild": "0.28.0",
+		"eslint-plugin-obsidianmd": "0.3.0",
+		"globals": "17.6.0",
+		"jiti": "2.7.0",
+		"tslib": "2.8.1",
+		"typescript": "^6.0.3",
+		"typescript-eslint": "8.60.0"
 	},
 	"dependencies": {
 		"@openai/agents": "^0.11.5",
-		"obsidian": "latest",
+		"obsidian": "^1.12.3",
 		"openai": "^6.39.0",
 		"zod": "^4.4.3"
 	}
