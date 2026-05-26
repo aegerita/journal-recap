@@ -2,6 +2,10 @@ import { Notice } from "obsidian";
 import type JournalRecapPlugin from "../main";
 import { ActiveNote } from "../obsidian/active-note";
 import { generateJournalRecap } from "../recap/agent";
+import {
+	DEFAULT_RECAP_OUTPUT_TYPE,
+	DEFAULT_RECAP_SYSTEM_PROMPT,
+} from "../recap/defaults";
 
 export function registerSummarizeCommand(
 	plugin: JournalRecapPlugin,
@@ -20,9 +24,7 @@ async function runSummarize(
 	plugin: JournalRecapPlugin,
 	activeNote: ActiveNote,
 ) {
-	const loadingNotice = createLoadingNotice(
-		`${plugin.manifest.name}: Processing...`,
-	);
+	const loadingNotice = new Notice(`${plugin.manifest.name}: Processing...`, 0);
 
 	try {
 		await summarize(plugin, activeNote);
@@ -31,25 +33,6 @@ async function runSummarize(
 	} finally {
 		loadingNotice.hide();
 	}
-}
-
-function createLoadingNotice(text: string, timeout = 10000): Notice {
-	const notice = new Notice("", timeout);
-	const loadingContainer = activeDocument.createElement("div");
-	loadingContainer.addClass("loading-container");
-
-	const loadingIcon = activeDocument.createElement("div");
-	loadingIcon.addClass("loading-icon");
-
-	const loadingText = activeDocument.createElement("span");
-	loadingText.textContent = text;
-
-	notice.messageEl.empty();
-	loadingContainer.appendChild(loadingIcon);
-	loadingContainer.appendChild(loadingText);
-	notice.messageEl.appendChild(loadingContainer);
-
-	return notice;
 }
 
 async function summarize(
@@ -61,22 +44,27 @@ async function summarize(
 		return;
 	}
 
-	const input = await activeNote.getContent();
-	if (!input.trim()) {
+	const activeNoteContent = await activeNote.getContent();
+	if (!activeNoteContent?.content.trim()) {
 		new Notice(`${plugin.manifest.name}: No journal content found.`);
 		return;
 	}
 
-	const response = await generateJournalRecap(input, {
-		systemPrompt: plugin.settings.commandOption.systemPrompt,
-		outputType: plugin.settings.commandOption.outputType,
+	const requestTemplate = getRequestTemplate(plugin.settings.commandOption);
+	const response = await generateJournalRecap(activeNoteContent.content, {
+		systemPrompt: requestTemplate.systemPrompt,
+		outputType: requestTemplate.outputType,
 		apiKey: plugin.settings.apiKey,
 		model: plugin.settings.commandOption.model,
 		baseURL: plugin.settings.baseURL,
 	});
 
-	for (const [key, value] of Object.entries(response)) {
-		await activeNote.insertAtFrontMatter(key, value);
+	for (const key of Object.keys(response)) {
+		await activeNote.insertAtFrontMatter(
+			activeNoteContent.file,
+			key,
+			response[key],
+		);
 	}
 
 	new Notice(`${plugin.manifest.name}: Summarized.`);
@@ -88,4 +76,20 @@ function formatError(error: unknown): string {
 	}
 
 	return String(error);
+}
+
+function getRequestTemplate(
+	commandOption: JournalRecapPlugin["settings"]["commandOption"],
+) {
+	if (commandOption.useCustomCommand) {
+		return {
+			systemPrompt: commandOption.systemPrompt,
+			outputType: commandOption.outputType,
+		};
+	}
+
+	return {
+		systemPrompt: DEFAULT_RECAP_SYSTEM_PROMPT,
+		outputType: DEFAULT_RECAP_OUTPUT_TYPE,
+	};
 }

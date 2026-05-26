@@ -1,6 +1,6 @@
 # Journal Recap
 
-`Journal Recap` is an [Obsidian](https://obsidian.md/) plugin that summarizes daily journal entries with the OpenAI Agents SDK. It writes a one-sentence summary and day ratings into the note frontmatter.
+`Journal Recap` is an [Obsidian](https://obsidian.md/) plugin that summarizes daily journal entries with the OpenAI Responses API. It writes a one-sentence summary into the note frontmatter.
 
 ## Original Project
 
@@ -14,11 +14,11 @@ This plugin is based on [Auto Classifier](https://github.com/HyeonseoNam/auto-cl
 
 ## Privacy and data
 
-- When you run **Summarize current journal entry**, the current note content, excluding frontmatter, is sent to the configured endpoint through the OpenAI Agents SDK with the configured prompt and structured output schema.
+- When you run **Summarize current journal entry**, the current note content, excluding frontmatter, is sent to the configured Responses API endpoint with the configured prompt and structured output schema.
 - The API test button sends a short test message to the same endpoint.
 - The generated response is written back to the active note frontmatter.
 - Your API key, base endpoint, model, prompt, and schema are stored in Obsidian's plugin data for this vault.
-- Agent tracing is disabled for recap runs.
+- Requests include `store: false` for OpenAI Responses API calls.
 - This plugin does not include telemetry or send data anywhere except the endpoint you configure.
 
 ## Development

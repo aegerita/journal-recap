@@ -1,4 +1,4 @@
-import type { JsonSchemaDefinition } from "@openai/agents";
+import type { ResponseTextFormat } from "./types";
 
 export const DEFAULT_RECAP_SYSTEM_PROMPT = `You are helping me write a one-sentence summary for my daily journal entry.
 
@@ -31,10 +31,10 @@ Rules:
 
 Before writing, choose a fresh sentence shape that fits the entry's actual texture. Some days can sound clipped, some meandering, some dry, some plain, some gently pleased. Let the entry decide.
 
-Now write the summary and ratings.
+Now write the summary.
 `;
 
-export const DEFAULT_RECAP_OUTPUT_TYPE: JsonSchemaDefinition = {
+export const DEFAULT_RECAP_OUTPUT_TYPE: ResponseTextFormat = {
 	type: "json_schema",
 	name: "summary",
 	strict: true,

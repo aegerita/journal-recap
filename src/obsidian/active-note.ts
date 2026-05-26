@@ -1,12 +1,17 @@
-import { App, MarkdownView } from "obsidian";
+import { App, MarkdownView, type TFile } from "obsidian";
+
+export interface ActiveNoteContent {
+	file: TFile;
+	content: string;
+}
 
 export class ActiveNote {
 	constructor(private app: App) {}
 
-	async getContent(): Promise<string> {
+	async getContent(): Promise<ActiveNoteContent | null> {
 		const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
 		if (!activeView?.file) {
-			return "";
+			return null;
 		}
 
 		let content = activeView.getViewData();
@@ -18,21 +23,20 @@ export class ActiveNote {
 			content = content.split("---").slice(2).join("---").trim();
 		}
 
-		return content;
+		return {
+			file: activeView.file,
+			content,
+		};
 	}
 
 	async insertAtFrontMatter(
+		file: TFile,
 		key: string,
 		value: unknown,
 		overwrite = true,
 	): Promise<void> {
-		const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
-		if (!activeView?.file) {
-			return;
-		}
-
 		await this.app.fileManager.processFrontMatter(
-			activeView.file,
+			file,
 			(frontmatter: Record<string, unknown>) => {
 				if (Object.prototype.hasOwnProperty.call(frontmatter, key) && !overwrite) {
 					const existingValue = frontmatter[key];

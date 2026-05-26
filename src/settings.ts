@@ -1,16 +1,16 @@
 import { App, Notice, PluginSettingTab, Setting } from "obsidian";
-import type { JsonSchemaDefinition } from "@openai/agents";
 import type JournalRecapPlugin from "./main";
 import { generateJournalRecap } from "./recap/agent";
 import {
 	DEFAULT_RECAP_OUTPUT_TYPE,
 	DEFAULT_RECAP_SYSTEM_PROMPT,
 } from "./recap/defaults";
+import type { ResponseTextFormat } from "./recap/types";
 
 export interface CommandOption {
 	useCustomCommand: boolean;
 	systemPrompt: string;
-	outputType: JsonSchemaDefinition;
+	outputType: ResponseTextFormat;
 	model: string;
 }
 
@@ -63,7 +63,9 @@ export class JournalRecapSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName("Base endpoint")
-			.setDesc("Use the default endpoint or a compatible endpoint.")
+			.setDesc(
+				"Use the default OpenAI endpoint or a compatible responses endpoint.",
+			)
 			.addText((text) =>
 				text
 					.setPlaceholder(DEFAULT_SETTINGS.baseURL)
@@ -180,7 +182,7 @@ export class JournalRecapSettingTab extends PluginSettingTab {
 					.setValue(JSON.stringify(commandOption.outputType, null, 2))
 					.onChange(async (value) => {
 						try {
-							commandOption.outputType = JSON.parse(value) as JsonSchemaDefinition;
+							commandOption.outputType = JSON.parse(value) as ResponseTextFormat;
 							await this.plugin.saveSettings();
 						} catch {
 							new Notice("Custom output schema is not valid JSON.");
