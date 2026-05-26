@@ -11,7 +11,9 @@ Write exactly ONE sentence that:
 - highlights the main productive or meaningful things
 - mentions frustrations or drains if they meaningfully shaped the day
 - prioritizes emotional truth over perfect completeness
-- uses concrete details from this entry so it could not apply equally well to a different day
+- uses concrete details from this entry so it could not apply equally well to a different day, however,
+- think about what happened today that actually lasts long term, and let that guide your summary
+- the goal is always long term personal growth and insights, not a recaps of the day's events
 
 Rules:
 - no bullet points
@@ -25,7 +27,6 @@ Rules:
 - keep it around 20 to 35 words
 - keep the writing natural, specific, and diary-like
 - vary the sentence structure from day to day
-- do not reuse the wording, rhythm, or structure of the examples
 - avoid generic openings like Pretty decent day, Solid day, or A surprisingly good day unless the entry itself strongly calls for it
 - avoid default phrases like real progress, small wins, enjoyable moments, felt grounded, lingering frustration, or got meaningful stuff done unless those are clearly the most natural words for this exact entry
 
