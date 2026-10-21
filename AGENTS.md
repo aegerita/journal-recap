@@ -3,12 +3,12 @@
 ## Project overview
 
 - Target: Obsidian Community Plugin (TypeScript → bundled JavaScript).
-- Entry point: `main.ts` compiled to `main.js` and loaded by Obsidian.
+- Entry point: `src/main.ts` compiled to `main.js` and loaded by Obsidian.
 - Required release artifacts: `main.js`, `manifest.json`, and optional `styles.css`.
 
 ## Environment & tooling
 
-- Node.js: use current LTS (Node 18+ recommended).
+- Node.js: use Node 24 LTS (`nvm use`); CI covers Node 22 and 24.
 - **Package manager: npm** (required for this sample - `package.json` defines npm scripts and dependencies).
 - **Bundler: esbuild** (required for this sample - `esbuild.config.mjs` and build scripts depend on it). Alternative bundlers like Rollup or webpack are acceptable for other projects if they bundle all external dependencies into `main.js`.
 - Types: `obsidian` type definitions.
@@ -35,10 +35,8 @@ npm run build
 
 ## Linting
 
-- To use eslint install eslint from terminal: `npm install -g eslint`
-- To use eslint to analyze this project use this command: `eslint main.ts`
-- eslint will then create a report with suggestions for code improvement by file and line number.
-- If your source code is in a folder, such as `src`, you can use eslint with this command to analyze all files in that folder: `eslint ./src/`
+- Run `npm run lint` with the locally installed ESLint and Obsidian rules.
+- Run `npm run check` before releasing: regression tests, lint, production build, and release metadata validation.
 
 ## File & folder conventions
 
@@ -96,8 +94,8 @@ npm run build
 ## Versioning & releases
 
 - Bump `version` in `manifest.json` (SemVer) and update `versions.json` to map plugin version → minimum app version.
-- Create a GitHub release whose tag exactly matches `manifest.json`'s `version`. Do not use a leading `v`.
-- Attach `manifest.json`, `main.js`, and `styles.css` (if present) to the release as individual assets.
+- Push a version tag that exactly matches `manifest.json`'s `version`. Do not use a leading `v`.
+- The release workflow validates metadata, runs checks, and publishes `manifest.json`, `main.js`, and `styles.css` with build provenance.
 - After the initial release, follow the process to add/update your plugin in the community catalog as required.
 
 ## Security, privacy, and compliance
@@ -246,6 +244,6 @@ this.registerInterval(window.setInterval(() => { /* ... */ }, 1000));
 
 - Obsidian sample plugin: https://github.com/obsidianmd/obsidian-sample-plugin
 - API documentation: https://docs.obsidian.md
-- Developer policies: https://docs.obsidian.md/Developer+policies
-- Plugin guidelines: https://docs.obsidian.md/Plugins/Releasing/Plugin+guidelines
+- Developer policies: https://docs.obsidian.md/community-directory/developer-policies
+- Plugin guidelines: https://docs.obsidian.md/community-directory/submission-requirements-for-plugins
 - Style guide: https://help.obsidian.md/style-guide

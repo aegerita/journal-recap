@@ -18,6 +18,14 @@ export function registerSummarizeCommand(
 			await runSummarize(plugin, activeNote);
 		},
 	});
+	// Preserve shortcuts saved before the command was renamed in 1.0.2.
+	plugin.addCommand({
+		id: "classify-tag-content",
+		name: "Summarize current journal entry (legacy shortcut)",
+		callback: async () => {
+			await runSummarize(plugin, activeNote);
+		},
+	});
 }
 
 async function runSummarize(

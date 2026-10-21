@@ -1,0 +1,43 @@
+name: Release Obsidian plugin
+
+on:
+    push:
+        tags:
+            - "[0-9]*.[0-9]*.[0-9]*"
+
+permissions:
+    contents: read
+
+jobs:
+    release:
+        runs-on: ubuntu-latest
+        permissions:
+            contents: write
+            id-token: write
+            attestations: write
+        steps:
+            - uses: actions/checkout@v6
+            - uses: actions/setup-node@v6
+              with:
+                  node-version: 24
+                  cache: "npm"
+            - run: npm ci
+            - name: Validate release version
+              env:
+                  RELEASE_TAG: ${{ github.ref_name }}
+              run: node scripts/check-release.mjs "$RELEASE_TAG"
+            - run: npm run check
+            - name: Attest build provenance
+              uses: actions/attest@v4
+              with:
+                  subject-path: |
+                      main.js
+                      manifest.json
+                      styles.css
+            - name: Publish release
+              env:
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  RELEASE_TAG: ${{ github.ref_name }}
+              run: |
+                  gh release create "$RELEASE_TAG" --verify-tag --generate-notes \
+                    --title "$RELEASE_TAG" main.js manifest.json styles.css

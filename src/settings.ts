@@ -1,4 +1,4 @@
-import { App, Notice, PluginSettingTab, Setting } from "obsidian";
+import { App, Notice, PluginSettingTab, Setting, requireApiVersion } from "obsidian";
 import type JournalRecapPlugin from "./main";
 import { generateJournalRecap } from "./recap/agent";
 import {
@@ -33,6 +33,20 @@ export const DEFAULT_SETTINGS: JournalRecapSettings = {
 	},
 };
 
+const PRIVACY_NOTICE = "Summarizing sends this note's content, excluding frontmatter, to your configured endpoint. OpenAI requires an API account and may charge for requests. Your API key is stored in this vault's plugin data.";
+
+interface SettingsRow {
+	name: string;
+	desc?: string;
+	render(setting: Setting): void;
+}
+
+interface SettingsGroup {
+	type: "group";
+	heading: string;
+	items: SettingsRow[];
+}
+
 export class JournalRecapSettingTab extends PluginSettingTab {
 	plugin: JournalRecapPlugin;
 
@@ -41,69 +55,189 @@ export class JournalRecapSettingTab extends PluginSettingTab {
 		this.plugin = plugin;
 	}
 
-	display(): void {
-		const { containerEl } = this;
+	getSettingDefinitions(): SettingsGroup[] {
 		const commandOption = this.plugin.settings.commandOption;
+		const connection: SettingsGroup = {
+			type: "group",
+			heading: "Connection",
+			items: [
+				{
+					name: "Privacy and data",
+					desc: PRIVACY_NOTICE,
+					render: (setting) => {
+						setting.settingEl.empty();
+						setting.settingEl.createEl("p", {
+							text: PRIVACY_NOTICE,
+						});
+					},
+				},
+				{
+					name: "Model",
+					desc: "Model identifier.",
+					render: (setting) => {
+						setting.addText((text) =>
+							text.setValue(commandOption.model).onChange(async (value) => {
+								commandOption.model = value.trim();
+								await this.plugin.saveSettings();
+							}),
+						);
+					},
+				},
+				{
+					name: "Base endpoint",
+					desc: "Use the default OpenAI endpoint or a compatible responses endpoint.",
+					render: (setting) => {
+						setting.addText((text) =>
+							text
+								.setPlaceholder(DEFAULT_SETTINGS.baseURL)
+								.setValue(this.plugin.settings.baseURL)
+								.onChange(async (value) => {
+									this.plugin.settings.baseURL = value.trim() || DEFAULT_SETTINGS.baseURL;
+									await this.plugin.saveSettings();
+								}),
+						);
+					},
+				},
+				{
+					name: "API key",
+					desc: "Enter the API key for your configured endpoint.",
+					render: (setting) => this.renderApiKeySetting(setting),
+				},
+			],
+		};
+		const advanced: SettingsGroup = {
+			type: "group",
+			heading: "Advanced",
+			items: [{
+				name: "Use custom request template",
+				render: (setting) => {
+					setting.addToggle((toggle) =>
+						toggle
+							.setValue(commandOption.useCustomCommand)
+							.onChange(async (value) => {
+								commandOption.useCustomCommand = value;
+								await this.plugin.saveSettings();
+								this.refreshSettings();
+							}),
+					);
+				},
+			}],
+		};
 
-		containerEl.empty();
-
-		new Setting(containerEl).setName("Connection").setHeading();
-
-		new Setting(containerEl)
-			.setName("Model")
-			.setDesc("Model identifier.")
-			.addText((text) =>
-				text
-					.setValue(commandOption.model)
-					.onChange(async (value) => {
-						commandOption.model = value.trim();
-						await this.plugin.saveSettings();
-					}),
+		if (commandOption.useCustomCommand) {
+			advanced.items.push(
+				{
+					name: "Custom prompt template",
+					desc: "The model uses this as the system prompt.",
+					render: (setting) => {
+						setting
+							.setClass("setting-item-child")
+							.setClass("block-control-item")
+							.setClass("height20-text-area")
+							.addTextArea((text) =>
+								text
+									.setPlaceholder("Write a custom system prompt.")
+									.setValue(commandOption.systemPrompt)
+									.onChange(async (value) => {
+										commandOption.systemPrompt = value;
+										await this.plugin.saveSettings();
+									}),
+							)
+							.addExtraButton((button) => {
+								button
+									.setIcon("reset")
+									.setTooltip("Restore default")
+									.onClick(async () => {
+										commandOption.systemPrompt = DEFAULT_RECAP_SYSTEM_PROMPT;
+										await this.plugin.saveSettings();
+										this.refreshSettings();
+									});
+							});
+					},
+				},
+				{
+					name: "Custom output schema",
+					desc: "The output schema must be a JSON schema object.",
+					render: (setting) => {
+						setting
+							.setClass("setting-item-child")
+							.setClass("block-control-item")
+							.setClass("height20-text-area")
+							.addTextArea((text) =>
+								text
+									.setPlaceholder("Write a structured output schema.")
+									.setValue(JSON.stringify(commandOption.outputType, null, 2))
+									.onChange(async (value) => {
+										try {
+											commandOption.outputType = JSON.parse(value) as ResponseTextFormat;
+											await this.plugin.saveSettings();
+										} catch {
+											new Notice("Custom output schema is not valid JSON.");
+										}
+									}),
+							)
+							.addExtraButton((button) => {
+								button
+									.setIcon("reset")
+									.setTooltip("Restore default")
+									.onClick(async () => {
+										commandOption.outputType = DEFAULT_RECAP_OUTPUT_TYPE;
+										await this.plugin.saveSettings();
+										this.refreshSettings();
+									});
+							});
+					},
+				},
 			);
+		}
 
-		new Setting(containerEl)
-			.setName("Base endpoint")
-			.setDesc(
-				"Use the default OpenAI endpoint or a compatible responses endpoint.",
-			)
-			.addText((text) =>
-				text
-					.setPlaceholder(DEFAULT_SETTINGS.baseURL)
-					.setValue(this.plugin.settings.baseURL)
-					.onChange(async (value) => {
-						this.plugin.settings.baseURL = value.trim() || DEFAULT_SETTINGS.baseURL;
-						await this.plugin.saveSettings();
-					}),
-			);
+		return [connection, advanced];
+	}
 
-		const apiKeySetting = new Setting(containerEl)
-			.setName("API key")
-			.setDesc("")
-			.addText((text) => {
-				text.inputEl.type = "password";
-				text
-					.setPlaceholder("API key")
-					.setValue(this.plugin.settings.apiKey)
-					.onChange(async (value) => {
-						this.plugin.settings.apiKey = value.trim();
-						this.plugin.settings.apiKeyTestedAt = null;
-						await this.plugin.saveSettings();
-					});
-			});
+	display(): void {
+		this.renderLegacySettings();
+	}
 
-		apiKeySetting.descEl.createSpan({
-			text: "Enter the API key for your configured endpoint.",
+	private renderLegacySettings(): void {
+		this.containerEl.empty();
+		for (const group of this.getSettingDefinitions()) {
+			new Setting(this.containerEl).setName(group.heading).setHeading();
+			for (const item of group.items) {
+				const setting = new Setting(this.containerEl).setName(item.name);
+				if (item.desc) setting.setDesc(item.desc);
+				item.render(setting);
+			}
+		}
+	}
+
+	private refreshSettings(): void {
+		if (requireApiVersion("1.13.0") && typeof this.update === "function") {
+			this.update();
+		} else {
+			this.renderLegacySettings();
+		}
+	}
+
+	private renderApiKeySetting(setting: Setting): void {
+		setting.addText((text) => {
+			text.inputEl.type = "password";
+			text
+				.setPlaceholder("API key")
+				.setValue(this.plugin.settings.apiKey)
+				.onChange(async (value) => {
+					this.plugin.settings.apiKey = value.trim();
+					this.plugin.settings.apiKeyTestedAt = null;
+					await this.plugin.saveSettings();
+				});
 		});
-		const apiTestMessageEl = apiKeySetting.descEl.createDiv();
+		const apiTestMessageEl = setting.descEl.createDiv();
 		this.renderApiTestMessage(apiTestMessageEl);
-
-		apiKeySetting.addButton((button) => {
+		setting.addButton((button) => {
 			button
 				.setButtonText("Test API call")
 				.setCta()
 				.onClick(async () => {
 					apiTestMessageEl.setText("Testing API call...");
-
 					try {
 						await generateJournalRecap("Test connection", {
 							systemPrompt: "Return a valid JSON response for the requested schema.",
@@ -112,7 +246,6 @@ export class JournalRecapSettingTab extends PluginSettingTab {
 							model: this.plugin.settings.commandOption.model,
 							baseURL: this.plugin.settings.baseURL,
 						});
-
 						this.plugin.settings.apiKeyTestedAt = new Date().toISOString();
 						await this.plugin.saveSettings();
 						this.renderApiTestMessage(apiTestMessageEl);
@@ -122,86 +255,6 @@ export class JournalRecapSettingTab extends PluginSettingTab {
 						apiTestMessageEl.setText(`Error: ${formatError(error)}`);
 					}
 				});
-		});
-
-		new Setting(containerEl).setName("Advanced").setHeading();
-
-		new Setting(containerEl)
-			.setName("Use custom request template")
-			.addToggle((toggle) =>
-				toggle
-					.setValue(commandOption.useCustomCommand)
-					.onChange(async (value) => {
-						commandOption.useCustomCommand = value;
-						await this.plugin.saveSettings();
-						this.display();
-					}),
-			);
-
-		if (!commandOption.useCustomCommand) {
-			return;
-		}
-
-		const promptTemplateSetting = new Setting(containerEl)
-			.setName("Custom prompt template")
-			.setClass("setting-item-child")
-			.setClass("block-control-item")
-			.setClass("height20-text-area")
-			.addTextArea((text) =>
-				text
-					.setPlaceholder("Write a custom system prompt.")
-					.setValue(commandOption.systemPrompt)
-					.onChange(async (value) => {
-						commandOption.systemPrompt = value;
-						await this.plugin.saveSettings();
-					}),
-			)
-			.addExtraButton((button) => {
-				button
-					.setIcon("reset")
-					.setTooltip("Restore default")
-					.onClick(async () => {
-						commandOption.systemPrompt = DEFAULT_RECAP_SYSTEM_PROMPT;
-						await this.plugin.saveSettings();
-						this.display();
-					});
-			});
-
-		promptTemplateSetting.descEl.createSpan({
-			text: "The model uses this as the system prompt.",
-		});
-
-		const outputSchemaSetting = new Setting(containerEl)
-			.setName("Custom output schema")
-			.setClass("setting-item-child")
-			.setClass("block-control-item")
-			.setClass("height20-text-area")
-			.addTextArea((text) =>
-				text
-					.setPlaceholder("Write a structured output schema.")
-					.setValue(JSON.stringify(commandOption.outputType, null, 2))
-					.onChange(async (value) => {
-						try {
-							commandOption.outputType = JSON.parse(value) as ResponseTextFormat;
-							await this.plugin.saveSettings();
-						} catch {
-							new Notice("Custom output schema is not valid JSON.");
-						}
-					}),
-			)
-			.addExtraButton((button) => {
-				button
-					.setIcon("reset")
-					.setTooltip("Restore default")
-					.onClick(async () => {
-						commandOption.outputType = DEFAULT_RECAP_OUTPUT_TYPE;
-						await this.plugin.saveSettings();
-						this.display();
-					});
-			});
-
-		outputSchemaSetting.descEl.createSpan({
-			text: "The output schema must be a JSON schema object.",
 		});
 	}
 

@@ -1,4 +1,4 @@
-import { App, MarkdownView, type TFile } from "obsidian";
+import { App, getFrontMatterInfo, MarkdownView, type TFile } from "obsidian";
 
 export interface ActiveNoteContent {
 	file: TFile;
@@ -14,18 +14,12 @@ export class ActiveNote {
 			return null;
 		}
 
-		let content = activeView.getViewData();
-		const frontmatter = this.app.metadataCache.getFileCache(
-			activeView.file,
-		)?.frontmatter;
-
-		if (frontmatter) {
-			content = content.split("---").slice(2).join("---").trim();
-		}
+		const content = activeView.getViewData();
+		const { contentStart } = getFrontMatterInfo(content);
 
 		return {
 			file: activeView.file,
-			content,
+			content: content.slice(contentStart).trim(),
 		};
 	}
 

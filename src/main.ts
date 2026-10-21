@@ -1,6 +1,7 @@
 import { Plugin } from "obsidian";
 import { registerSummarizeCommand } from "./commands/summarize";
 import { ActiveNote } from "./obsidian/active-note";
+import { mergeSettings } from "./settings-data";
 import {
 	DEFAULT_SETTINGS,
 	JournalRecapSettingTab,
@@ -19,11 +20,7 @@ export default class JournalRecapPlugin extends Plugin {
 	}
 
 	async loadSettings() {
-		this.settings = Object.assign(
-			{},
-			DEFAULT_SETTINGS,
-			(await this.loadData()) as Partial<JournalRecapSettings>,
-		);
+		this.settings = mergeSettings(DEFAULT_SETTINGS, await this.loadData());
 	}
 
 	async saveSettings() {
