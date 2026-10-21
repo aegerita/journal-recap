@@ -1,9 +1,24 @@
-import tseslint from 'typescript-eslint';
+/// <reference types="node" />
+
 import obsidianmd from "eslint-plugin-obsidianmd";
 import globals from "globals";
-import { globalIgnores } from "eslint/config";
+import { globalIgnores, defineConfig } from "eslint/config";
 
-export default tseslint.config(
+export default defineConfig(
+	globalIgnores([
+		"node_modules",
+		"dist",
+		".vscode",
+		"esbuild.config.mjs",
+		"version-bump.mjs",
+		"versions.json",
+		"main.js",
+		"package.json",
+		"package-lock.json",
+		"tsconfig.json",
+		"tests/**",
+		"scripts/**",
+	]),
 	{
 		languageOptions: {
 			globals: {
@@ -11,35 +26,12 @@ export default tseslint.config(
 			},
 			parserOptions: {
 				projectService: {
-					allowDefaultProject: [
-						'eslint.config.js',
-						'manifest.json'
-					]
+					allowDefaultProject: ["eslint.config.mts", "manifest.json"],
 				},
 				tsconfigRootDir: import.meta.dirname,
-				extraFileExtensions: ['.json']
+				extraFileExtensions: [".json"],
 			},
 		},
 	},
 	...obsidianmd.configs.recommended,
-	{
-		files: ["**/*.json"],
-		rules: {
-			"obsidianmd/no-plugin-as-component": "off",
-		},
-	},
-	globalIgnores([
-		"node_modules",
-		"dist",
-		".vscode",
-		"esbuild.config.mjs",
-		"eslint.config.js",
-		"eslint.config.mts",
-		"manifest.json",
-		"package-lock.json",
-		"tsconfig.json",
-		"version-bump.mjs",
-		"versions.json",
-		"main.js",
-	]),
 );

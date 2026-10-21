@@ -9,6 +9,7 @@ This plugin is based on [Auto Classifier](https://github.com/HyeonseoNam/auto-cl
 ## Usage
 
 - Configure your API key, base endpoint, and model in the plugin settings.
+- OpenAI requires an API account with available billing or credits. API usage is billed separately from ChatGPT subscriptions.
 - Run **Summarize current journal entry** from the command palette.
 - Optionally enable a custom prompt and response schema in advanced settings.
 
@@ -23,36 +24,37 @@ This plugin is based on [Auto Classifier](https://github.com/HyeonseoNam/auto-cl
 
 ## Development
 
-- Install dependencies with `npm install`.
+- Use Node.js 24 LTS (`nvm use`), or Node.js 22.13 or later.
+- Install the locked dependencies with `npm ci`.
 - Run `npm run dev` to compile in watch mode.
 - Run `npm run build` for a production build.
-- Run `npm run lint` before shipping changes.
+- Run `npm run check` before shipping changes. It runs regression tests, Obsidian's recommended lint rules, a strict TypeScript production build, and release metadata validation.
+- Tests use mocked Obsidian APIs. They do not send notes or make paid API calls.
+- CI checks Node.js 22 and 24. Tooling follows the [official Obsidian template](https://github.com/obsidianmd/obsidian-sample-plugin), with plugin-specific source and settings preserved.
+- Template updates use a merge that preserves upstream ancestry. Preserve that history when merging the maintenance branch; a squash or rebase can leave GitHub's behind count unchanged.
+- TypeScript remains on version 6 until `typescript-eslint` supports version 7. The ESLint JavaScript config remains on version 9 to satisfy Obsidian's lint plugin.
 
 ## Manual Installation
 
-Copy `main.js`, `manifest.json`, and `styles.css` to:
+Download `main.js`, `manifest.json`, and `styles.css` from the [latest release](https://github.com/aegerita/journal-recap/releases/latest), then copy them to:
 
 ```text
 VaultFolder/.obsidian/plugins/journal-recap/
 ```
 
-## Releasing new releases
+## Releases
 
-- Update your `manifest.json` with your new version number, such as `1.0.1`, and the minimum Obsidian version required for your latest release.
-- Update your `versions.json` file with `"new-plugin-version": "minimum-obsidian-version"` so older versions of Obsidian can download an older version of your plugin that's compatible.
-- Create new GitHub release using your new version number as the "Tag version". Use the exact version number, don't include a prefix `v`.
-- Upload the files `manifest.json`, `main.js`, `styles.css` as binary attachments. Note: The manifest.json file must be in two places, first the root path of your repository and also in the release.
-- Publish the release.
+1. Update `minAppVersion` in `manifest.json` only if the plugin needs a newer Obsidian API.
+2. Run `npm run check` and record user-visible changes in `CHANGELOG.md`.
+3. From a clean, reviewed checkout, run `npm version patch` (or `minor` / `major`). This updates package, manifest, lockfile, and compatibility history, then creates a commit and version tag.
+4. Push the commit and tag, for example `git push origin master --follow-tags`.
+5. Verify the **Release Obsidian plugin** workflow and the published release assets.
 
-> You can simplify the version bump process by running `npm version patch`, `npm version minor` or `npm version major` after updating `minAppVersion` manually in `manifest.json`.
-> The command will bump version in `manifest.json` and `package.json`, and add the entry for the new version to `versions.json`
+Version tags use `x.y.z`, without a `v` prefix. The release workflow rejects inconsistent metadata, runs all checks, attests the build, and publishes `main.js`, `manifest.json`, and `styles.css`. Build output stays out of Git.
 
 ## Adding your plugin to the community plugin list
 
-- Check the [plugin guidelines](https://docs.obsidian.md/Plugins/Releasing/Plugin+guidelines).
-- Publish an initial version.
-- Make sure you have a `README.md` file in the root of your repo.
-- Make a pull request at https://github.com/obsidianmd/obsidian-releases to add your plugin.
+Follow Obsidian's [developer policies](https://docs.obsidian.md/community-directory/developer-policies), [submission requirements](https://docs.obsidian.md/community-directory/submission-requirements-for-plugins), and [current submission process](https://docs.obsidian.md/Plugins/Releasing/Submit%20your%20plugin). Publishing a GitHub release does not itself add this plugin to the community directory.
 
 ## License
 
