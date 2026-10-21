@@ -31,6 +31,7 @@ This plugin is based on [Auto Classifier](https://github.com/HyeonseoNam/auto-cl
 - Run `npm run check` before shipping changes. It runs regression tests, Obsidian's recommended lint rules, a strict TypeScript production build, and release metadata validation.
 - Tests use mocked Obsidian APIs. They do not send notes or make paid API calls.
 - CI checks Node.js 22 and 24. Tooling follows the [official Obsidian template](https://github.com/obsidianmd/obsidian-sample-plugin), with plugin-specific source and settings preserved.
+- Template updates use a merge that preserves upstream ancestry. Preserve that history when merging the maintenance branch; a squash or rebase can leave GitHub's behind count unchanged.
 - TypeScript remains on version 6 until `typescript-eslint` supports version 7. The ESLint JavaScript config remains on version 9 to satisfy Obsidian's lint plugin.
 
 ## Manual Installation
