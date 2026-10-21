@@ -72,7 +72,7 @@ test("rejects API errors, refusals, incomplete responses, and invalid output", a
 	}
 });
 
-test("current and legacy commands summarize the captured file", async () => {
+test("the existing command summarizes the captured file", async () => {
 	const commands: { id: string; callback: () => Promise<void> }[] = [];
 	const plugin = {
 		manifest: { name: "Journal Recap" },
@@ -87,11 +87,10 @@ test("current and legacy commands summarize the captured file", async () => {
 		insertAtFrontMatter: async (...args: unknown[]) => { writes.push(args); },
 	};
 	registerSummarizeCommand(plugin as never, note as never);
-	assert.deepEqual(commands.map((command) => command.id), ["summarize-current-entry", "classify-tag-content"]);
+	assert.deepEqual(commands.map((command) => command.id), ["summarize-current-entry"]);
 	state.response.text = '{"output_text":"{\\"summary\\":\\"A day.\\"}"}';
 	for (const command of commands) await command.callback();
 	assert.deepEqual(writes, [
-		[capturedFile, "summary", "A day."],
 		[capturedFile, "summary", "A day."],
 	]);
 });
